@@ -1,67 +1,40 @@
 # cobalt-trade-backtest-pipe
 
-`cobalt-trade-backtest-pipe` is a focused Zig codebase around design a Zig verification harness for backtest systems, covering storage recovery, log and snapshot fixtures, and failure-oriented tests. It is meant to be easy to inspect, run, and extend without a hosted service.
+`cobalt-trade-backtest-pipe` is a Zig project in trading systems. Its focus is to design a Zig verification harness for backtest systems, covering storage recovery, log and snapshot fixtures, and failure-oriented tests.
 
-## Cobalt Trade Backtest Pipe Walkthrough
+## Use Case
 
-I would read the project from the outside in: command, fixture, model, then roadmap. That keeps the trading systems idea grounded in files that can be checked locally.
+The point is to make a small domain rule concrete enough that a reader can change it and immediately see what broke.
 
-## Capabilities
+## Cobalt Trade Backtest Pipe Review Notes
 
-- Includes extended examples for fills, including `surge` and `degraded`.
-- Documents portfolio pressure tradeoffs in `docs/operations.md`.
-- Runs locally with a single verification command and no external credentials.
-- Stores project constants and verification metadata in `metadata/project.json`.
-- Adds a repository audit script that checks structure before running the language verifier.
+`recovery` and `baseline` are the cases worth reading first. They show the optimistic and cautious ends of the fixture.
 
-## Reason For The Project
+## Highlights
 
-This project keeps the domain idea close to the tests. That makes it useful as a reference implementation, a small experiment, or a starting point for a more specialized tool.
+- `fixtures/domain_review.csv` adds cases for spread pressure and fill risk.
+- `metadata/domain-review.json` records the same cases in structured form.
+- `config/review-profile.json` captures the read order and the two review questions.
+- `examples/cobalt-trade-backtest-walkthrough.md` walks through the case spread.
+- The Zig code includes a review path for `quote width` and `spread pressure`.
+- `docs/field-notes.md` explains the strongest and weakest cases.
 
-## Where Things Live
+## Code Layout
 
-- `src`: primary implementation
-- `fixtures`: compact golden scenarios
-- `examples`: expanded scenario set
-- `metadata`: project constants and verification metadata
-- `docs`: operations and extension notes
-- `scripts`: local verification and audit commands
+The fixture data drives the tests. The code stays thin, while `metadata/domain-review.json` and `config/review-profile.json` explain what each case is meant to protect.
 
-## How It Is Put Together
+The Zig code keeps the review rule close to the tests.
 
-The design is intentionally direct: parse or construct a signal, score it, classify it, and verify the expected branch. This makes the repository useful for studying trading systems behavior without needing a service or database unless the language project itself is SQL. The Zig version uses compile-time constants and native test blocks for fast local checks.
-
-## Command Examples
+## Run The Check
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts/verify.ps1
 ```
 
-This runs the language-level build or test path against the compact fixture set.
+## Regression Path
 
-## Data Notes
+The same command runs the local verification path. The highest-scoring domain case is `recovery` at 187, which lands in `ship`. The most cautious case is `baseline` at 105, which lands in `watch`.
 
-`examples/extended_cases.csv` adds six named cases. I kept the names plain so failures are easy to read in a terminal: baseline, pressure, surge, degraded, recovery, and boundary.
+## Future Work
 
-## Check The Work
-
-```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File scripts/audit.ps1
-```
-
-The audit command checks repository structure and README constraints before it delegates to the verifier.
-
-## Tradeoffs
-
-The fixture set is deliberately small. That keeps the review surface clear, but it also means the model should not be treated as a complete domain simulator.
-
-## Possible Extensions
-
-- Add a comparison mode that shows how decisions change when one signal is adjusted.
-- Add a loader for `examples/extended_cases.csv` and promote selected cases into the language test suite.
-- Add a short report command that prints the score breakdown for a single scenario.
-- Add one more trading systems fixture that focuses on a malformed or borderline input.
-
-## Getting It Running
-
-Install Zig and run the commands from the repository root. The project does not need credentials or a hosted service.
+The fixture set is small enough to audit by hand. The next useful expansion is malformed input coverage, not extra surface area.
